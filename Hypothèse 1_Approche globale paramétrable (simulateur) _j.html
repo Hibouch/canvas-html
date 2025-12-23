@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulateur Chatbot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    input[type="range"] {
+      accent-color: #8b5cf6;
+    }
+  </style>
+</head>
+<body class="w-full min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+      <div class="flex items-center justify-center gap-3">
+        <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+        </svg>
+        <div class="text-center">
+          <h1 class="text-3xl font-bold text-gray-800">Hypothèse 1 : Approche globale paramétrable (simulateur)</h1>
+          <p class="text-sm text-gray-600 mt-1">Estimation basée sur le nombre de messages par utilisateur par jour</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 colonnes canaux -->
+    <div id="channels-grid" class="grid grid-cols-4 gap-4 mb-6"></div>
+
+    <!-- Total Messages -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6 text-center">
+      <h3 class="text-lg font-bold text-gray-800 mb-2">Volume Total Estimé</h3>
+      <div id="total-messages" class="text-5xl font-bold text-indigo-600">0</div>
+      <div class="text-sm text-gray-600 mt-1">messages par mois</div>
+    </div>
+
+    <!-- Optimisation recommandée -->
+    <div class="space-y-4">
+      <div class="flex items-center gap-2 mb-4">
+        <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+        </svg>
+        <h2 class="text-2xl font-bold text-gray-800">Stratégies d'Allocation Optimales</h2>
+      </div>
+      <div id="optimization-container"></div>
+    </div>
+
+    <!-- Méthodologie -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg mt-6">
+      <h3 class="text-lg font-bold text-blue-900 mb-3">📊 Méthodologie de Calcul</h3>
+      <div class="bg-white p-4 rounded-lg mb-3">
+        <code class="text-sm text-indigo-900 font-mono">
+          Messages Totaux/Mois = Utilisateurs/Mois × Messages/Utilisateur/Jour × 30 jours
+        </code>
+      </div>
+      <div class="text-sm text-blue-900 space-y-2">
+        <p>• Ajustez le <strong>nombre de messages par utilisateur par jour</strong> (1 à 10)</p>
+        <p>• Exemple : 3 msg/user/jour = chaque utilisateur envoie en moyenne 3 messages par jour, soit 90 messages par mois</p>
+        <p>• <strong>Distribution Optimisée</strong>: Trouve la meilleure combinaison de packs pour minimiser coût et gaspillage</p>
+        <p class="pt-2 border-t border-blue-200 mt-3">💡 L'algorithme optimise automatiquement l'allocation des packs pour obtenir le meilleur rapport coût/utilisation</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let messagesPerUser = {
+      eshop: 1,
+      siteWeb: 2,
+      myTTWeb: 2,
+      myTTApp: 3
+    };
+
+    // Data
+    const channelsData = {
+      eshop: {
+        name: 'E-shop',
+        color: 'green',
+        usersActive: 187000,
+        newUsers: 167000,
+        usersPicDebut: 2500,
+        usersMois: 2000
+      },
+      siteWeb: {
+        name: 'Site Web',
+        color: 'blue',
+        usersActive: 1300000,
+        newUsers: 2300000,
+        usersPicDebut: 12000,
+        usersMois: 10000
+      },
+      myTTWeb: {
+        name: 'MyTT Web',
+        color: 'indigo',
+        usersActive: 756000,
+        newUsers: 610000,
+        usersPicDebut: 20000,
+        usersMois: 13000
+      },
+      myTTApp: {
+        name: 'MyTT App',
+        color: 'purple',
+        usersActive: 942000,
+        newUsers: 556000,
+        usersPicDebut: 90000,
+        usersMois: 60000
+      }
+    };
+
+    const packs = [
+      { name: 'SAAS 5K', messages: 5000, monthly: 500, yearly: 6000, bots: 5 },
+      { name: 'SAAS 10K', messages: 10000, monthly: 735, yearly: 8820, bots: 10 },
+      { name: 'SAAS 20K', messages: 20000, monthly: 1200, yearly: 14400, bots: 10 },
+      { name: 'SAAS 30K', messages: 30000, monthly: 1645, yearly: 19740, bots: 20 },
+      { name: 'SAAS 50K', messages: 50000, monthly: 2450, yearly: 29400, bots: 30 },
+      { name: 'SAAS 100K', messages: 100000, monthly: 4500, yearly: 54000, bots: 50 },
+      { name: 'SAAS 150K', messages: 150000, monthly: 5500, yearly: 66000, bots: 80 }
+    ];
+
+    const colorClasses = {
+      green: { bg: 'bg-green-500', bgLight: 'bg-green-50', text: 'text-green-600' },
+      blue: { bg: 'bg-blue-500', bgLight: 'bg-blue-50', text: 'text-blue-600' },
+      indigo: { bg: 'bg-indigo-500', bgLight: 'bg-indigo-50', text: 'text-indigo-600' },
+      purple: { bg: 'bg-purple-500', bgLight: 'bg-purple-50', text: 'text-purple-600' }
+    };
+
+    // Utility functions
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(0) + 'K';
+      return num.toString();
+    }
+
+    function calculateChannel(channelKey) {
+      const channel = channelsData[channelKey];
+      const msgPerUserPerDay = messagesPerUser[channelKey];
+      const totalMessages = Math.round(channel.usersMois * msgPerUserPerDay * 30);
+      return { channelKey, name: channel.name, totalMessages };
+    }
+
+    // Algorithme optimisé pour trouver la meilleure combinaison de packs
+    function findBestPacksForVolume(targetMessages) {
+      // Pour des volumes très élevés, utiliser plusieurs packs du plus grand
+      const largestPack = packs[packs.length - 1];
+      const numLargestPacks = Math.floor(targetMessages / largestPack.messages);
+      const remaining = targetMessages - (numLargestPacks * largestPack.messages);
+      
+      let bestSolution = null;
+      let bestScore = Infinity;
+
+      // Solution 1: Utiliser plusieurs packs du plus grand + un plus petit pour le reste
+      if (numLargestPacks > 0) {
+        const smallerPack = packs.find(p => p.messages >= remaining);
+        if (smallerPack) {
+          const solution = [];
+          for (let i = 0; i < numLargestPacks; i++) {
+            solution.push(largestPack);
+          }
+          if (remaining > 0) {
+            solution.push(smallerPack);
+          }
+          
+          const totalCap = solution.reduce((sum, p) => sum + p.messages, 0);
+          const totalCost = solution.reduce((sum, p) => sum + p.monthly, 0);
+          const utilization = (targetMessages / totalCap) * 100;
+          const waste = totalCap - targetMessages;
+          const score = totalCost + (waste * 0.01);
+          
+          if (utilization >= 70) {
+            bestSolution = { packs: solution, totalCapacity: totalCap, totalCost, utilization, waste };
+            bestScore = score;
+          }
+        }
+      }
+
+      // Solution 2: Tester toutes les combinaisons de 1 à 5 packs
+      for (let numPacks = 1; numPacks <= 5; numPacks++) {
+        const solution = findCombination(targetMessages, numPacks);
+        if (solution) {
+          const score = solution.totalCost + (solution.waste * 0.01);
+          if (score < bestScore && solution.utilization >= 70) {
+            bestScore = score;
+            bestSolution = solution;
+          }
+        }
+      }
+
+      // Solution de secours: utiliser suffisamment de packs du plus grand
+      if (!bestSolution) {
+        const numNeeded = Math.ceil(targetMessages / largestPack.messages);
+        const solution = [];
+        for (let i = 0; i < numNeeded; i++) {
+          solution.push(largestPack);
+        }
+        const totalCap = solution.reduce((sum, p) => sum + p.messages, 0);
+        const totalCost = solution.reduce((sum, p) => sum + p.monthly, 0);
+        const utilization = (targetMessages / totalCap) * 100;
+        const waste = totalCap - targetMessages;
+        
+        bestSolution = { packs: solution, totalCapacity: totalCap, totalCost, utilization, waste };
+      }
+
+      return bestSolution;
+    }
+
+    function findCombination(targetMessages, numPacks) {
+      let bestCombo = null;
+      let bestScore = Infinity;
+
+      function tryCombo(indices) {
+        const combo = indices.map(i => packs[i]);
+        const totalCap = combo.reduce((sum, p) => sum + p.messages, 0);
+        
+        if (totalCap >= targetMessages) {
+          const totalCost = combo.reduce((sum, p) => sum + p.monthly, 0);
+          const waste = totalCap - targetMessages;
+          const utilization = (targetMessages / totalCap) * 100;
+          const score = totalCost + (waste * 0.01);
+          
+          if (utilization >= 70 && score < bestScore) {
+            bestScore = score;
+            bestCombo = {
+              packs: combo,
+              totalCapacity: totalCap,
+              totalCost,
+              utilization,
+              waste
+            };
+          }
+        }
+      }
+
+      function generateCombinations(start, current) {
+        if (current.length === numPacks) {
+          tryCombo(current);
+          return;
+        }
+        
+        for (let i = start; i < packs.length; i++) {
+          generateCombinations(i, [...current, i]);
+        }
+      }
+
+      generateCombinations(0, []);
+      return bestCombo;
+    }
+
+    function findOptimalPackCombination(channels) {
+      const totalMessages = channels.reduce((sum, ch) => sum + ch.totalMessages, 0);
+      const sortedChannels = [...channels].sort((a, b) => b.totalMessages - a.totalMessages);
+      
+      // Distribution Optimisée
+      const optimizedAllocation = [];
+      let remainingChannels = [...sortedChannels];
+      
+      while (remainingChannels.length > 0) {
+        const current = remainingChannels.shift();
+        const bestCombo = findBestPacksForVolume(current.totalMessages);
+        
+        if (bestCombo) {
+          if (bestCombo.packs.length === 1) {
+            // Essayer de grouper avec un autre canal
+            let grouped = false;
+            for (let i = 0; i < remainingChannels.length; i++) {
+              const partner = remainingChannels[i];
+              const combinedMessages = current.totalMessages + partner.totalMessages;
+              const combinedCombo = findBestPacksForVolume(combinedMessages);
+              
+              if (combinedCombo && combinedCombo.packs.length <= 2 && combinedCombo.utilization >= 70) {
+                combinedCombo.packs.forEach(pack => {
+                  optimizedAllocation.push({
+                    pack,
+                    channels: [current, partner],
+                    usage: combinedMessages / combinedCombo.packs.length
+                  });
+                });
+                remainingChannels.splice(i, 1);
+                grouped = true;
+                break;
+              }
+            }
+            
+            if (!grouped) {
+              optimizedAllocation.push({
+                pack: bestCombo.packs[0],
+                channels: [current],
+                usage: current.totalMessages
+              });
+            }
+          } else {
+            // Plusieurs packs nécessaires
+            bestCombo.packs.forEach(pack => {
+              optimizedAllocation.push({
+                pack,
+                channels: [current],
+                usage: current.totalMessages / bestCombo.packs.length
+              });
+            });
+          }
+        }
+      }
+      
+      const totalCost = optimizedAllocation.reduce((sum, pa) => sum + pa.pack.monthly, 0);
+      const totalYearly = totalCost * 12 * 0.9;
+      const totalCap = optimizedAllocation.reduce((sum, pa) => sum + pa.pack.messages, 0);
+      
+      return {
+        strategy: 'Distribution Optimisée',
+        packs: optimizedAllocation,
+        totalCost,
+        totalYearly,
+        utilization: ((totalMessages / totalCap) * 100).toFixed(1)
+      };
+    }
+
+    function calculateAll() {
+      const channelResults = Object.keys(channelsData).map(key => calculateChannel(key));
+      const totalMessages = channelResults.reduce((sum, ch) => sum + ch.totalMessages, 0);
+      const optimization = findOptimalPackCombination(channelResults);
+      
+      return { channels: channelResults, totalMessages, optimization };
+    }
+
+    function updateUI() {
+      const calculations = calculateAll();
+      
+      // Update channels grid
+      const channelsGrid = document.getElementById('channels-grid');
+      channelsGrid.innerHTML = '';
+      
+      Object.keys(channelsData).forEach(channelKey => {
+        const channel = channelsData[channelKey];
+        const result = calculations.channels.find(ch => ch.channelKey === channelKey);
+        const colors = colorClasses[channel.color];
+        
+        const channelDiv = document.createElement('div');
+        channelDiv.className = 'bg-white rounded-xl shadow-lg overflow-hidden';
+        channelDiv.innerHTML = `
+          <div class="${colors.bg} p-4 text-white">
+            <h2 class="text-lg font-bold text-center">${channel.name}</h2>
+          </div>
+
+          <div class="p-4 border-b">
+            <div class="text-center mb-3">
+              <div class="text-3xl font-bold text-gray-800">${messagesPerUser[channelKey]}</div>
+              <div class="text-xs text-gray-500">messages/utilisateur/jour</div>
+            </div>
+            
+            <input
+              type="range"
+              min="1"
+              max="10"
+              step="1"
+              value="${messagesPerUser[channelKey]}"
+              class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer mb-2"
+              onchange="updateMessagesPerUser('${channelKey}', parseInt(this.value))"
+            />
+            
+            <div class="grid grid-cols-5 gap-1">
+              ${[1, 2, 3, 5, 10].map(val => `
+                <button
+                  onclick="updateMessagesPerUser('${channelKey}', ${val})"
+                  class="py-1 text-xs font-semibold rounded transition-all ${
+                    messagesPerUser[channelKey] === val ? `${colors.bg} text-white` : `${colors.bgLight} ${colors.text}`
+                  }"
+                >
+                  ${val}
+                </button>
+              `).join('')}
+            </div>
+            <div class="text-xs text-gray-500 text-center mt-2">
+              💡 Nombre de messages qu'un utilisateur envoie par jour
+            </div>
+          </div>
+
+          <div class="p-4 border-b">
+            <div class="space-y-2">
+              <div class="${colors.bgLight} p-2 rounded text-xs">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Users/mois</span>
+                  <span class="font-bold ${colors.text}">${formatNumber(channel.usersMois)}</span>
+                </div>
+              </div>
+              <div class="${colors.bgLight} p-2 rounded text-xs">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Pic début</span>
+                  <span class="font-bold ${colors.text}">${formatNumber(channel.usersPicDebut)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-gray-50">
+            <div class="text-center">
+              <svg class="w-5 h-5 ${colors.text} mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+              </svg>
+              <div class="text-2xl font-bold ${colors.text}">
+                ${result.totalMessages.toLocaleString()}
+              </div>
+              <div class="text-xs text-gray-500 mt-1">messages/mois</div>
+              <div class="text-xs text-gray-400 mt-1">
+                ${formatNumber(channel.usersMois)} users × ${messagesPerUser[channelKey]} msg/jour × 30
+              </div>
+            </div>
+          </div>
+        `;
+        channelsGrid.appendChild(channelDiv);
+      });
+
+      // Update total messages
+      document.getElementById('total-messages').textContent = calculations.totalMessages.toLocaleString();
+
+      // Update optimization
+      const optimizationContainer = document.getElementById('optimization-container');
+      const opt = calculations.optimization;
+      
+      optimizationContainer.innerHTML = `
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden ring-4 ring-green-400">
+          <div class="p-5 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">RECOMMANDÉ</span>
+                <h3 class="text-xl font-bold">${opt.strategy}</h3>
+              </div>
+              <div class="text-right">
+                <div class="text-3xl font-bold">${opt.totalCost.toLocaleString()}€</div>
+                <div class="text-sm opacity-90">par mois</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-6">
+            <div class="grid gap-4 mb-4">
+              ${opt.packs.map(pa => `
+                <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-4 border-2 border-gray-200">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                      </svg>
+                      <div>
+                        <div class="font-bold text-lg text-gray-800">${pa.pack.name}</div>
+                        <div class="text-xs text-gray-600">
+                          ${pa.pack.messages.toLocaleString()} msg • ${pa.pack.bots} bots • ${pa.pack.monthly}€/mois
+                        </div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-sm font-semibold text-indigo-600">
+                        ${((pa.usage / pa.pack.messages) * 100).toFixed(1)}%
+                      </div>
+                      <div class="text-xs text-gray-500">utilisation</div>
+                    </div>
+                  </div>
+
+                  <div class="flex flex-wrap gap-2">
+                    ${pa.channels.map(ch => {
+                      const chColors = colorClasses[channelsData[ch.channelKey].color];
+                      return `
+                        <div class="px-3 py-1 rounded-full text-xs font-semibold ${chColors.bgLight} ${chColors.text}">
+                          ${ch.name}: ${ch.totalMessages.toLocaleString()} msg
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div class="text-center">
+                <div class="text-xs text-gray-600 mb-1">Coût Annuel</div>
+                <div class="text-xl font-bold text-gray-800">${opt.totalYearly.toLocaleString()}€</div>
+              </div>
+              <div class="text-center">
+                <div class="text-xs text-gray-600 mb-1">Économie vs Mensuel</div>
+                <div class="text-xl font-bold text-green-600">
+                  ${(opt.totalCost * 12 - opt.totalYearly).toLocaleString()}€
+                </div>
+              </div>
+              <div class="text-center">
+                <div class="text-xs text-gray-600 mb-1">Utilisation Globale</div>
+                <div class="text-xl font-bold text-indigo-600">${opt.utilization}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateMessagesPerUser(channelKey, value) {
+      messagesPerUser[channelKey] = value;
+      updateUI();
+    }
+
+    // Initial render
+    updateUI();
+  </script>
+</body>
+</html>

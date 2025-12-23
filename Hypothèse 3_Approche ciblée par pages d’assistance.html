@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulateur Chatbot - Optimisation Globale</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    input[type="range"] {
+      accent-color: #8b5cf6;
+    }
+  </style>
+</head>
+<body class="w-full min-h-screen bg-gradient-to-br from-slate-50 to-purple-50 p-6">
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+      <div class="flex items-center justify-center gap-3">
+        <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        <div class="text-center">
+          <h1 class="text-3xl font-bold text-gray-800">Hypothèse 3 : Approche ciblée par pages d’assistance</h1>
+          <p class="text-sm text-gray-600 mt-1">Période d'analyse : 01/04/2025 au 31/10/2025 (7 mois)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 colonnes canaux -->
+    <div id="channels-grid" class="grid grid-cols-3 gap-4 mb-6"></div>
+
+    <!-- Total Messages -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6 text-center">
+      <h3 class="text-lg font-bold text-gray-800 mb-2">Volume Total Estimé</h3>
+      <div id="total-messages" class="text-5xl font-bold text-indigo-600">0</div>
+      <div class="text-sm text-gray-600 mt-1">messages par mois</div>
+    </div>
+
+    <!-- Optimisation recommandée -->
+    <div class="space-y-4">
+      <div class="flex items-center gap-2 mb-4">
+        <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+        </svg>
+        <h2 class="text-2xl font-bold text-gray-800">Pack Recommandé - Pool Partagé</h2>
+      </div>
+      <div id="optimization-container"></div>
+    </div>
+
+    <!-- Méthodologie -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg mt-6">
+      <h3 class="text-lg font-bold text-blue-900 mb-3">📊 Méthodologie de Calcul & Hypothèses</h3>
+      
+      <div class="bg-white p-4 rounded-lg mb-4">
+        <h4 class="font-bold text-indigo-900 mb-2">Formule de calcul :</h4>
+        <code class="text-sm text-indigo-900 font-mono block mb-2">
+          Questions/Mois = Sessions × Taux d'Adoption
+        </code>
+        <code class="text-sm text-indigo-900 font-mono block">
+          Messages/Mois = Questions × 2 (question + réponse)
+        </code>
+      </div>
+
+      <div class="bg-white p-4 rounded-lg mb-4">
+        <h4 class="font-bold text-indigo-900 mb-3">Hypothèses clés :</h4>
+        <div class="text-sm text-blue-900 space-y-2">
+          <p><strong>1. Taux d'Adoption (ajustable 5-20%)</strong></p>
+          <ul class="ml-6 space-y-1">
+            <li>• <strong>Prudent (5%)</strong> : Adoption lente, utilisateurs hésitants</li>
+            <li>• <strong>Réaliste (10%)</strong> : Adoption progressive et naturelle</li>
+            <li>• <strong>Optimiste (15%)</strong> : Bonne communication, utilisateurs engagés</li>
+            <li>• <strong>Agressif (20%)</strong> : Promotion forte, chatbot très visible</li>
+          </ul>
+        </div>
+        <div class="text-sm text-blue-900 space-y-2 mt-3">
+          <p><strong>2. Ratio Question/Messages</strong></p>
+          <ul class="ml-6 space-y-1">
+            <li>• Chaque question utilisateur génère 1 réponse du bot</li>
+            <li>• Total : 2 messages par interaction (1 question + 1 réponse)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-lg">
+        <h4 class="font-bold text-indigo-900 mb-3">Sources des données :</h4>
+        <div class="text-sm text-blue-900 space-y-2">
+          <p><strong>MyTT Web</strong> : Sessions réelles sur pages Renseignements et Réclamations (auth + anon)</p>
+          <p><strong>MyTT App</strong> : Vues écrans /contactFormScreen et /reclamationMenu</p>
+          <p><strong>E-shop</strong> : Sessions pages /nous-contacter et /anonymos</p>
+          <p class="pt-2 border-t border-blue-200 mt-3">💡 <strong>Optimisation globale</strong> : L'algorithme calcule le volume total de messages de tous les canaux, puis trouve la combinaison de packs la plus rentable. Les packs sont partagés entre tous les canaux (pool commun). L'objectif est de minimiser le coût total et le gaspillage.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let adoptionRates = {
+      myTTWeb: 10,
+      myTTApp: 10,
+      eShop: 10
+    };
+
+    // Data from analytics (April-October 2025)
+    const channelsData = {
+      myTTWeb: {
+        name: 'MyTT Web',
+        color: 'indigo',
+        pages: [
+          { name: 'Renseignements (Auth)', sessions: 138, users: 105, newUsers: 26, engagement: 48 },
+          { name: 'Réclamations (Auth)', sessions: 369, users: 243, newUsers: 31, engagement: 152 },
+          { name: 'Réclamations (Anon)', sessions: 21084, users: 14537, newUsers: 10461, engagement: 70 }
+        ]
+      },
+      myTTApp: {
+        name: 'MyTT App',
+        color: 'purple',
+        pages: [
+          { name: '/contactFormScreen (Anon)', sessions: 91575, users: 53738, newUsers: 0, engagement: 78 },
+          { name: '/reclamationMenu (Auth)', sessions: 101358, users: 49181, newUsers: 0, engagement: 19 }
+        ]
+      },
+      eShop: {
+        name: 'E-shop',
+        color: 'green',
+        pages: [
+          { name: '/nous-contacter', sessions: 705, users: 580, newUsers: 350, engagement: 64.5 },
+          { name: '/anonymos', sessions: 1, users: 1, newUsers: 1, engagement: 25 }
+        ]
+      }
+    };
+
+    const packs = [
+      { name: 'SAAS 5K', messages: 5000, monthly: 500, yearly: 6000, bots: 5 },
+      { name: 'SAAS 10K', messages: 10000, monthly: 735, yearly: 8820, bots: 10 },
+      { name: 'SAAS 20K', messages: 20000, monthly: 1200, yearly: 14400, bots: 10 },
+      { name: 'SAAS 30K', messages: 30000, monthly: 1645, yearly: 19740, bots: 20 },
+      { name: 'SAAS 50K', messages: 50000, monthly: 2450, yearly: 29400, bots: 30 },
+      { name: 'SAAS 100K', messages: 100000, monthly: 4500, yearly: 54000, bots: 50 },
+      { name: 'SAAS 150K', messages: 150000, monthly: 5500, yearly: 66000, bots: 80 }
+    ];
+
+    const scenarios = [
+      { value: 5, label: 'Prudent' },
+      { value: 10, label: 'Réaliste' },
+      { value: 15, label: 'Optimiste' },
+      { value: 20, label: 'Agressif' }
+    ];
+
+    const colorClasses = {
+      green: { bg: 'bg-green-500', bgLight: 'bg-green-50', text: 'text-green-600' },
+      indigo: { bg: 'bg-indigo-500', bgLight: 'bg-indigo-50', text: 'text-indigo-600' },
+      purple: { bg: 'bg-purple-500', bgLight: 'bg-purple-50', text: 'text-purple-600' }
+    };
+
+    // Utility functions
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(0) + 'K';
+      return num.toString();
+    }
+
+    function calculateChannel(channelKey) {
+      const channel = channelsData[channelKey];
+      const rate = adoptionRates[channelKey] / 100;
+      
+      const totalSessions = channel.pages.reduce((sum, p) => sum + p.sessions, 0);
+      const questions = Math.round(totalSessions * rate);
+      const totalMessages = questions * 2; // 1 question + 1 réponse
+      
+      return { 
+        channelKey, 
+        name: channel.name, 
+        totalMessages,
+        questions,
+        totalSessions 
+      };
+    }
+
+    // Fonction d'optimisation globale améliorée
+    function findOptimalPackCombination(channels) {
+      const totalMessages = channels.reduce((sum, ch) => sum + ch.totalMessages, 0);
+      
+      if (totalMessages === 0) {
+        return {
+          strategy: 'Aucun pack nécessaire',
+          packs: [],
+          totalCost: 0,
+          totalYearly: 0,
+          utilization: 0,
+          totalMessages: 0,
+          totalCapacity: 0,
+          waste: 0
+        };
+      }
+
+      let bestSolution = null;
+      let bestScore = Infinity;
+
+      // Essayer toutes les combinaisons possibles (avec répétitions)
+      // Limite: jusqu'à 8 packs maximum pour éviter explosion combinatoire
+      const maxPacks = 8;
+      
+      for (let numPacks = 1; numPacks <= maxPacks; numPacks++) {
+        const solution = findBestCombination(totalMessages, numPacks);
+        if (solution) {
+          // Score = coût + pénalité pour gaspillage
+          const wastePercentage = (solution.waste / solution.totalCapacity) * 100;
+          const score = solution.totalCost + (wastePercentage * 10); // Pénalité pour gaspillage
+          
+          if (score < bestScore) {
+            bestScore = score;
+            bestSolution = solution;
+          }
+        }
+      }
+
+      // Fallback si aucune solution trouvée
+      if (!bestSolution) {
+        const largestPack = packs[packs.length - 1];
+        const numNeeded = Math.ceil(totalMessages / largestPack.messages);
+        const selectedPacks = Array(numNeeded).fill(largestPack);
+        const totalCap = numNeeded * largestPack.messages;
+        const totalCost = numNeeded * largestPack.monthly;
+        
+        bestSolution = {
+          packs: selectedPacks,
+          totalCapacity: totalCap,
+          totalCost,
+          waste: totalCap - totalMessages,
+          utilization: ((totalMessages / totalCap) * 100).toFixed(1)
+        };
+      }
+
+      // Créer l'allocation avec tous les canaux partagés sur les packs
+      const packAllocations = bestSolution.packs.map((pack, index) => ({
+        pack,
+        channels: channels, // Tous les canaux partagent tous les packs
+        usage: totalMessages / bestSolution.packs.length // Usage moyen par pack
+      }));
+
+      const totalYearly = bestSolution.totalCost * 12 * 0.9; // 10% de réduction annuelle
+
+      return {
+        strategy: 'Optimisation Globale',
+        packs: packAllocations,
+        totalCost: bestSolution.totalCost,
+        totalYearly,
+        utilization: bestSolution.utilization,
+        totalMessages,
+        totalCapacity: bestSolution.totalCapacity,
+        waste: bestSolution.waste
+      };
+    }
+
+    function findBestCombination(targetMessages, numPacks) {
+      let bestCombo = null;
+      let bestScore = Infinity;
+
+      // Générer toutes les combinaisons avec répétitions
+      function generateCombos(current, remaining) {
+        if (remaining === 0) {
+          const combo = current.map(i => packs[i]);
+          const totalCap = combo.reduce((sum, p) => sum + p.messages, 0);
+          
+          // Le pack DOIT couvrir au minimum le volume (pas plus de 100% d'utilisation)
+          if (totalCap >= targetMessages) {
+            const totalCost = combo.reduce((sum, p) => sum + p.monthly, 0);
+            const waste = totalCap - targetMessages;
+            const utilization = (targetMessages / totalCap) * 100;
+            
+            // Score: privilégier le coût faible et le gaspillage faible
+            const score = totalCost + (waste * 0.001); // Petite pénalité pour gaspillage
+            
+            if (score < bestScore) {
+              bestScore = score;
+              bestCombo = {
+                packs: combo,
+                totalCapacity: totalCap,
+                totalCost,
+                utilization,
+                waste
+              };
+            }
+          }
+          return;
+        }
+
+        // Essayer chaque pack (y compris les répétitions)
+        for (let i = 0; i < packs.length; i++) {
+          generateCombos([...current, i], remaining - 1);
+        }
+      }
+
+      generateCombos([], numPacks);
+      return bestCombo;
+    }
+
+    function calculateAll() {
+      const channelResults = Object.keys(channelsData).map(key => calculateChannel(key));
+      const totalMessages = channelResults.reduce((sum, ch) => sum + ch.totalMessages, 0);
+      const optimization = findOptimalPackCombination(channelResults);
+      
+      return { channels: channelResults, totalMessages, optimization };
+    }
+
+    function updateUI() {
+      const calculations = calculateAll();
+      
+      // Update channels grid
+      const channelsGrid = document.getElementById('channels-grid');
+      channelsGrid.innerHTML = '';
+      
+      Object.keys(channelsData).forEach(channelKey => {
+        const channel = channelsData[channelKey];
+        const result = calculations.channels.find(ch => ch.channelKey === channelKey);
+        const colors = colorClasses[channel.color];
+        
+        const channelDiv = document.createElement('div');
+        channelDiv.className = 'bg-white rounded-xl shadow-lg overflow-hidden';
+        channelDiv.innerHTML = `
+          <div class="${colors.bg} p-4 text-white">
+            <h2 class="text-xl font-bold text-center">${channel.name}</h2>
+          </div>
+
+          <div class="p-4 border-b">
+            <div class="text-center mb-3">
+              <div class="text-4xl font-bold text-gray-800">${adoptionRates[channelKey]}%</div>
+              <div class="text-xs text-gray-500">Taux d'adoption</div>
+            </div>
+            
+            <input
+              type="range"
+              min="0"
+              max="20"
+              step="1"
+              value="${adoptionRates[channelKey]}"
+              class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer mb-2"
+              onchange="updateAdoptionRate('${channelKey}', parseInt(this.value))"
+            />
+            
+            <div class="grid grid-cols-4 gap-1">
+              ${scenarios.map(s => `
+                <button
+                  onclick="updateAdoptionRate('${channelKey}', ${s.value})"
+                  class="py-2 text-xs font-semibold rounded transition-all ${
+                    adoptionRates[channelKey] === s.value ? `${colors.bg} text-white` : `${colors.bgLight} ${colors.text}`
+                  }"
+                >
+                  ${s.label}<br><span class="text-xs opacity-75">${s.value}%</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="p-4 border-b">
+            <div class="text-sm font-semibold text-gray-700 mb-2">Sessions mensuelles par page</div>
+            <div class="space-y-2">
+              ${channel.pages.map(page => `
+                <div class="${colors.bgLight} p-2 rounded text-xs">
+                  <div class="font-medium text-gray-700 mb-1">${page.name}</div>
+                  <div class="flex justify-between">
+                    <div>
+                      <span class="${colors.text} font-bold">${page.sessions.toLocaleString()}</span>
+                      <span class="text-gray-500"> sessions</span>
+                    </div>
+                    <div class="text-gray-600">${page.engagement}s eng.</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <div class="mt-2 pt-2 border-t">
+              <div class="flex justify-between text-sm">
+                <span class="font-semibold text-gray-700">Total Sessions</span>
+                <span class="${colors.text} font-bold">${result.totalSessions.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 bg-gray-50 space-y-3">
+            <div class="${colors.bgLight} p-3 rounded-lg">
+              <div class="text-xs text-gray-600 mb-1">Questions / mois</div>
+              <div class="${colors.text} text-2xl font-bold">${result.questions.toLocaleString()}</div>
+              <div class="text-xs text-gray-500 mt-1">${result.totalSessions.toLocaleString()} sessions × ${adoptionRates[channelKey]}%</div>
+            </div>
+            
+            <div class="${colors.bg} p-3 rounded-lg text-white">
+              <div class="text-xs opacity-90 mb-1">Messages / mois</div>
+              <div class="text-3xl font-bold">${result.totalMessages.toLocaleString()}</div>
+              <div class="text-xs opacity-90 mt-1">${result.questions.toLocaleString()} questions × 2</div>
+            </div>
+          </div>
+        `;
+        channelsGrid.appendChild(channelDiv);
+      });
+
+      // Update total messages
+      document.getElementById('total-messages').textContent = calculations.totalMessages.toLocaleString();
+
+      // Update optimization
+      const optimizationContainer = document.getElementById('optimization-container');
+      const opt = calculations.optimization;
+      
+      optimizationContainer.innerHTML = `
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden ring-4 ring-green-400">
+          <div class="p-5 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">RECOMMANDÉ</span>
+                <h3 class="text-xl font-bold">${opt.strategy}</h3>
+              </div>
+              <div class="text-right">
+                <div class="text-3xl font-bold">${opt.totalCost.toLocaleString()}€</div>
+                <div class="text-sm opacity-90">par mois</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-6">
+            <!-- Info sur le partage global -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 rounded">
+              <div class="flex items-start gap-2">
+                <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div class="text-sm text-blue-900">
+                  <strong>Pool partagé :</strong> Les ${opt.packs.length} pack(s) ci-dessous sont partagés entre tous les canaux. 
+                  Volume total : <strong>${calculations.totalMessages.toLocaleString()} messages/mois</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Liste des packs -->
+            <div class="grid gap-4 mb-4">
+              ${opt.packs.map((pa, index) => `
+                <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-4 border-2 border-gray-200">
+                  <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                      <div class="bg-indigo-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                        ${index + 1}
+                      </div>
+                      <div>
+                        <div class="font-bold text-lg text-gray-800">${pa.pack.name}</div>
+                        <div class="text-xs text-gray-600">
+                          ${pa.pack.messages.toLocaleString()} msg • ${pa.pack.bots} bots • ${pa.pack.monthly}€/mois
+                        </div>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-sm font-semibold text-indigo-600">
+                        ${((pa.usage / pa.pack.messages) * 100).toFixed(1)}%
+                      </div>
+                      <div class="text-xs text-gray-500">utilisation</div>
+                    </div>
+                  </div>
+
+                  <!-- Barre de progression -->
+                  <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                    <div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: ${Math.min(100, (pa.usage / pa.pack.messages) * 100)}%"></div>
+                  </div>
+                  <div class="text-xs text-gray-600 text-center">
+                    ${Math.round(pa.usage).toLocaleString()} / ${pa.pack.messages.toLocaleString()} messages
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- Répartition par canal -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-4">
+              <h4 class="font-bold text-gray-800 mb-3">📊 Répartition du volume par canal</h4>
+              <div class="grid gap-2">
+                ${calculations.channels.map(ch => {
+                  const chColors = colorClasses[channelsData[ch.channelKey].color];
+                  const percentage = ((ch.totalMessages / calculations.totalMessages) * 100).toFixed(1);
+                  return `
+                    <div class="flex items-center justify-between ${chColors.bgLight} p-2 rounded">
+                      <span class="font-semibold ${chColors.text}">${ch.name}</span>
+                      <div class="text-right">
+                        <span class="font-bold text-gray-800">${ch.totalMessages.toLocaleString()}</span>
+                        <span class="text-xs text-gray-600 ml-2">(${percentage}%)</span>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+
+            <!-- Statistiques finales -->
+            <div class="grid grid-cols-4 gap-4 bg-gradient-to-r from-gray-50 to-green-50 p-4 rounded-lg">
+              <div class="text-center">
+                <div class="text-xs text-gray-600 mb-1">Capacité Totale</div>
+                <div class="text-xl font-bold text-gray-800">${opt.totalCapacity.toLocaleString()}</div>
+                <div class="text-xs text-gray-500">messages/mois</div>
+              </div>
+              <div class="text-center">
+                <div class="text-xs text-gray-600 mb-1">Gaspillage</div>
+                <div class="text-xl font-bold ${opt.waste > opt.totalCapacity * 0.2 ? 'text-orange-600' : 'text-green-600'}">
+                  ${opt.waste.toLocaleString()}
+                </div>
+                <div class="text-xs text-gray-500">${((opt.waste / opt.totalCapacity) * 100).toFixed(1)}%</div>
+              </div>
+              <div class="text-center">
+                <div class="text-xs text-gray-600 mb-1">Coût Annuel (-10%)</div>
+                <div class="text-xl font-bold text-gray-800">${opt.totalYearly.toLocaleString()}€</div>
+                <div class="text-xs text-green-600 font-semibold">-${(opt.totalCost * 12 - opt.totalYearly).toLocaleString()}€</div>
+              </div>
+              <div class="text-center">
+                <div class="text-xs text-gray-600 mb-1">Utilisation</div>
+                <div class="text-xl font-bold text-indigo-600">${opt.utilization}%</div>
+                <div class="text-xs text-gray-500">efficacité</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateAdoptionRate(channelKey, value) {
+      adoptionRates[channelKey] = value;
+      updateUI();
+    }
+
+    // Initial render
+    updateUI();
+  </script>
+</body>
+</html>
