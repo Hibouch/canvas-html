@@ -36,33 +36,7 @@
       <div class="text-sm text-gray-600 mt-1">messages par mois</div>
     </div>
 
-    <!-- Optimisation recommandée -->
-    <div class="space-y-4">
-      <div class="flex items-center gap-2 mb-4">
-        <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-        </svg>
-        <h2 class="text-2xl font-bold text-gray-800">Stratégies d'Allocation Optimales</h2>
-      </div>
-      <div id="optimization-container"></div>
-    </div>
-
-    <!-- Méthodologie -->
-    <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg mt-6">
-      <h3 class="text-lg font-bold text-blue-900 mb-3">📊 Méthodologie de Calcul</h3>
-      <div class="bg-white p-4 rounded-lg mb-3">
-        <code class="text-sm text-indigo-900 font-mono">
-          Messages Totaux/Mois = Utilisateurs/Mois × Messages/Utilisateur/Jour × 30 jours
-        </code>
-      </div>
-      <div class="text-sm text-blue-900 space-y-2">
-        <p>• Ajustez le <strong>nombre de messages par utilisateur par jour</strong> (1 à 10)</p>
-        <p>• Exemple : 3 msg/user/jour = chaque utilisateur envoie en moyenne 3 messages par jour, soit 90 messages par mois</p>
-        <p>• <strong>Distribution Optimisée</strong>: Trouve la meilleure combinaison de packs pour minimiser coût et gaspillage</p>
-        <p class="pt-2 border-t border-blue-200 mt-3">💡 L'algorithme optimise automatiquement l'allocation des packs pour obtenir le meilleur rapport coût/utilisation</p>
-      </div>
-    </div>
-  </div>
+  
 
   <script>
     // State
@@ -417,20 +391,7 @@
       const optimizationContainer = document.getElementById('optimization-container');
       const opt = calculations.optimization;
       
-      optimizationContainer.innerHTML = `
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden ring-4 ring-green-400">
-          <div class="p-5 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">RECOMMANDÉ</span>
-                <h3 class="text-xl font-bold">${opt.strategy}</h3>
-              </div>
-              <div class="text-right">
-                <div class="text-3xl font-bold">${opt.totalCost.toLocaleString()}€</div>
-                <div class="text-sm opacity-90">par mois</div>
-              </div>
-            </div>
-          </div>
+      
 
           <div class="p-6">
             <div class="grid gap-4 mb-4">
