@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulateur Chatbot</title>
+  <title>Simulateur Chatbot - Optimisation</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     input[type="range"] {
@@ -20,66 +20,75 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
         </svg>
         <div class="text-center">
-          <h1 class="text-3xl font-bold text-gray-800">Hypothèse 1 : Approche globale paramétrable (simulateur)</h1>
-          <p class="text-sm text-gray-600 mt-1">Estimation basée sur le nombre de messages par utilisateur par jour</p>
+          <h1 class="text-3xl font-bold text-gray-800">Simulateur Chatbot</h1>
+          <p class="text-sm text-gray-600 mt-1">Best Case | Adoption Progressive | Worst Case</p>
         </div>
       </div>
     </div>
 
     <!-- 4 colonnes canaux -->
-    <div id="channels-grid" class="grid grid-cols-4 gap-4 mb-6"></div>
+    <div id="channels-grid" class="grid grid-cols-2 gap-6 mb-8"></div>
 
     <!-- Total Messages -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-6 text-center">
-      <h3 class="text-lg font-bold text-gray-800 mb-2">Volume Total Estimé</h3>
-      <div id="total-messages" class="text-5xl font-bold text-indigo-600">0</div>
-      <div class="text-sm text-gray-600 mt-1">messages par mois</div>
+    <div class="grid grid-cols-3 gap-4 mb-8">
+      <div class="bg-green-50 rounded-xl shadow-lg p-6 border-2 border-green-400 text-center">
+        <h3 class="text-lg font-bold text-green-800 mb-2">Best Case 🟢</h3>
+        <div id="total-best-case" class="text-4xl font-bold text-green-600">0</div>
+        <div class="text-sm text-gray-600 mt-1">messages par mois</div>
+      </div>
+      
+      <div class="bg-blue-50 rounded-xl shadow-lg p-6 border-2 border-blue-400 text-center">
+        <h3 class="text-lg font-bold text-blue-800 mb-2">Adoption Progressive 🔵</h3>
+        <div id="total-adoption-case" class="text-4xl font-bold text-blue-600">0</div>
+        <div class="text-sm text-gray-600 mt-1">messages par mois</div>
+      </div>
+      
+      <div class="bg-red-50 rounded-xl shadow-lg p-6 border-2 border-red-400 text-center">
+        <h3 class="text-lg font-bold text-red-800 mb-2">Worst Case 🔴</h3>
+        <div id="total-worst-case" class="text-4xl font-bold text-red-600">0</div>
+        <div class="text-sm text-gray-600 mt-1">messages par mois</div>
+      </div>
     </div>
 
-    
+    <!-- Tableau des packs recommandés -->
+    <div id="packs-table" class="bg-white rounded-xl shadow-lg overflow-hidden"></div>
+
+  </div>
 
   <script>
-    // State
+    // État
     let messagesPerUser = {
+      portal: 1,
       eshop: 1,
-      siteWeb: 2,
       myTTWeb: 2,
-      myTTApp: 3
+      myTTApp: 2
     };
 
-    // Data
+    // Données réelles
     const channelsData = {
-      eshop: {
-        name: 'E-shop',
-        color: 'green',
-        usersActive: 187000,
-        newUsers: 167000,
-        usersPicDebut: 2500,
-        usersMois: 2000
-      },
-      siteWeb: {
-        name: 'Portail',
+      portal: {
+        name: 'www.tunisietelecom.tn',
         color: 'blue',
-        usersActive: 1300000,
-        newUsers: 2300000,
-        usersPicDebut: 12000,
-        usersMois: 10000
+        maxUsers: 21237,
+        minUsers: 6041
+      },
+      eshop: {
+        name: 'eshop.tunisietelecom.tn',
+        color: 'green',
+        maxUsers: 2703,
+        minUsers: 709
       },
       myTTWeb: {
-        name: 'MyTT Web',
+        name: 'mytt.tunisietelecom.tn',
         color: 'indigo',
-        usersActive: 756000,
-        newUsers: 610000,
-        usersPicDebut: 20000,
-        usersMois: 13000
+        maxUsers: 21843,
+        minUsers: 3946
       },
       myTTApp: {
-        name: 'MyTT App',
+        name: 'My TT App',
         color: 'purple',
-        usersActive: 942000,
-        newUsers: 556000,
-        usersPicDebut: 90000,
-        usersMois: 60000
+        maxUsers: 93613,
+        minUsers: 38580
       }
     };
 
@@ -100,207 +109,114 @@
       purple: { bg: 'bg-purple-500', bgLight: 'bg-purple-50', text: 'text-purple-600' }
     };
 
-    // Utility functions
     function formatNumber(num) {
       if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
       if (num >= 1000) return (num / 1000).toFixed(0) + 'K';
-      return num.toString();
+      return Math.round(num).toString();
     }
 
     function calculateChannel(channelKey) {
       const channel = channelsData[channelKey];
       const msgPerUserPerDay = messagesPerUser[channelKey];
-      const totalMessages = Math.round(channel.usersMois * msgPerUserPerDay * 30);
-      return { channelKey, name: channel.name, totalMessages };
+      
+      const bestCase = Math.round(channel.minUsers * msgPerUserPerDay * 30);
+      
+      // Adoption Progressive: Min + 30% × (Max - Min)
+      const adoptionUsers = Math.round(channel.minUsers + 0.30 * (channel.maxUsers - channel.minUsers));
+      const adoptionCase = Math.round(adoptionUsers * msgPerUserPerDay * 30);
+      
+      const worstCase = Math.round(channel.maxUsers * msgPerUserPerDay * 30);
+      
+      return { 
+        channelKey, 
+        name: channel.name, 
+        bestCase,
+        adoptionCase,
+        worstCase,
+        adoptionUsers,
+        msgPerDay: msgPerUserPerDay,
+        minUsers: channel.minUsers,
+        maxUsers: channel.maxUsers
+      };
     }
 
-    // Algorithme optimisé pour trouver la meilleure combinaison de packs
-    function findBestPacksForVolume(targetMessages) {
-      // Pour des volumes très élevés, utiliser plusieurs packs du plus grand
-      const largestPack = packs[packs.length - 1];
-      const numLargestPacks = Math.floor(targetMessages / largestPack.messages);
-      const remaining = targetMessages - (numLargestPacks * largestPack.messages);
-      
+    function findOptimalPacksForVolume(targetMessages) {
       let bestSolution = null;
       let bestScore = Infinity;
 
-      // Solution 1: Utiliser plusieurs packs du plus grand + un plus petit pour le reste
-      if (numLargestPacks > 0) {
-        const smallerPack = packs.find(p => p.messages >= remaining);
-        if (smallerPack) {
-          const solution = [];
-          for (let i = 0; i < numLargestPacks; i++) {
-            solution.push(largestPack);
-          }
-          if (remaining > 0) {
-            solution.push(smallerPack);
-          }
-          
-          const totalCap = solution.reduce((sum, p) => sum + p.messages, 0);
-          const totalCost = solution.reduce((sum, p) => sum + p.monthly, 0);
-          const utilization = (targetMessages / totalCap) * 100;
-          const waste = totalCap - targetMessages;
-          const score = totalCost + (waste * 0.01);
-          
-          if (utilization >= 70) {
-            bestSolution = { packs: solution, totalCapacity: totalCap, totalCost, utilization, waste };
-            bestScore = score;
-          }
-        }
-      }
-
-      // Solution 2: Tester toutes les combinaisons de 1 à 5 packs
-      for (let numPacks = 1; numPacks <= 5; numPacks++) {
-        const solution = findCombination(targetMessages, numPacks);
-        if (solution) {
-          const score = solution.totalCost + (solution.waste * 0.01);
-          if (score < bestScore && solution.utilization >= 70) {
-            bestScore = score;
-            bestSolution = solution;
-          }
-        }
-      }
-
-      // Solution de secours: utiliser suffisamment de packs du plus grand
-      if (!bestSolution) {
-        const numNeeded = Math.ceil(targetMessages / largestPack.messages);
-        const solution = [];
-        for (let i = 0; i < numNeeded; i++) {
-          solution.push(largestPack);
-        }
-        const totalCap = solution.reduce((sum, p) => sum + p.messages, 0);
-        const totalCost = solution.reduce((sum, p) => sum + p.monthly, 0);
-        const utilization = (targetMessages / totalCap) * 100;
-        const waste = totalCap - targetMessages;
+      // Tester toutes les combinaisons possibles de packs
+      function tryPackCombination(packIndices) {
+        const selectedPacks = packIndices.map(i => packs[i]);
+        const totalCapacity = selectedPacks.reduce((sum, p) => sum + p.messages, 0);
         
-        bestSolution = { packs: solution, totalCapacity: totalCap, totalCost, utilization, waste };
-      }
-
-      return bestSolution;
-    }
-
-    function findCombination(targetMessages, numPacks) {
-      let bestCombo = null;
-      let bestScore = Infinity;
-
-      function tryCombo(indices) {
-        const combo = indices.map(i => packs[i]);
-        const totalCap = combo.reduce((sum, p) => sum + p.messages, 0);
-        
-        if (totalCap >= targetMessages) {
-          const totalCost = combo.reduce((sum, p) => sum + p.monthly, 0);
-          const waste = totalCap - targetMessages;
-          const utilization = (targetMessages / totalCap) * 100;
-          const score = totalCost + (waste * 0.01);
+        // Vérifier que l'utilisation ne dépasse pas 100%
+        if (totalCapacity >= targetMessages) {
+          const totalCost = selectedPacks.reduce((sum, p) => sum + p.monthly, 0);
+          const utilization = (targetMessages / totalCapacity) * 100;
+          const wastedCapacity = totalCapacity - targetMessages;
           
-          if (utilization >= 70 && score < bestScore) {
+          // Score: favoriser l'utilisation élevée et le coût bas
+          const score = totalCost + (wastedCapacity * 0.001);
+          
+          if (utilization > 0 && score < bestScore) {
             bestScore = score;
-            bestCombo = {
-              packs: combo,
-              totalCapacity: totalCap,
+            bestSolution = {
+              packs: selectedPacks,
+              packIndices: packIndices,
+              totalCapacity,
               totalCost,
-              utilization,
-              waste
+              utilization: utilization.toFixed(1),
+              wastedCapacity,
+              totalMessages: targetMessages
             };
           }
         }
       }
 
+      // Générer toutes les combinaisons possibles de 1 à 7 packs
       function generateCombinations(start, current) {
-        if (current.length === numPacks) {
-          tryCombo(current);
-          return;
+        if (current.length > 0) {
+          tryPackCombination(current);
         }
         
-        for (let i = start; i < packs.length; i++) {
-          generateCombinations(i, [...current, i]);
+        if (current.length < 7) {
+          for (let i = start; i < packs.length; i++) {
+            generateCombinations(i + 1, [...current, i]);
+          }
         }
       }
 
       generateCombinations(0, []);
-      return bestCombo;
-    }
-
-    function findOptimalPackCombination(channels) {
-      const totalMessages = channels.reduce((sum, ch) => sum + ch.totalMessages, 0);
-      const sortedChannels = [...channels].sort((a, b) => b.totalMessages - a.totalMessages);
       
-      // Distribution Optimisée
-      const optimizedAllocation = [];
-      let remainingChannels = [...sortedChannels];
-      
-      while (remainingChannels.length > 0) {
-        const current = remainingChannels.shift();
-        const bestCombo = findBestPacksForVolume(current.totalMessages);
-        
-        if (bestCombo) {
-          if (bestCombo.packs.length === 1) {
-            // Essayer de grouper avec un autre canal
-            let grouped = false;
-            for (let i = 0; i < remainingChannels.length; i++) {
-              const partner = remainingChannels[i];
-              const combinedMessages = current.totalMessages + partner.totalMessages;
-              const combinedCombo = findBestPacksForVolume(combinedMessages);
-              
-              if (combinedCombo && combinedCombo.packs.length <= 2 && combinedCombo.utilization >= 70) {
-                combinedCombo.packs.forEach(pack => {
-                  optimizedAllocation.push({
-                    pack,
-                    channels: [current, partner],
-                    usage: combinedMessages / combinedCombo.packs.length
-                  });
-                });
-                remainingChannels.splice(i, 1);
-                grouped = true;
-                break;
-              }
-            }
-            
-            if (!grouped) {
-              optimizedAllocation.push({
-                pack: bestCombo.packs[0],
-                channels: [current],
-                usage: current.totalMessages
-              });
-            }
-          } else {
-            // Plusieurs packs nécessaires
-            bestCombo.packs.forEach(pack => {
-              optimizedAllocation.push({
-                pack,
-                channels: [current],
-                usage: current.totalMessages / bestCombo.packs.length
-              });
-            });
-          }
-        }
-      }
-      
-      const totalCost = optimizedAllocation.reduce((sum, pa) => sum + pa.pack.monthly, 0);
-      const totalYearly = totalCost * 12 * 0.9;
-      const totalCap = optimizedAllocation.reduce((sum, pa) => sum + pa.pack.messages, 0);
-      
-      return {
-        strategy: 'Distribution Optimisée',
-        packs: optimizedAllocation,
-        totalCost,
-        totalYearly,
-        utilization: ((totalMessages / totalCap) * 100).toFixed(1)
-      };
+      return bestSolution;
     }
 
     function calculateAll() {
       const channelResults = Object.keys(channelsData).map(key => calculateChannel(key));
-      const totalMessages = channelResults.reduce((sum, ch) => sum + ch.totalMessages, 0);
-      const optimization = findOptimalPackCombination(channelResults);
       
-      return { channels: channelResults, totalMessages, optimization };
+      const totalBestCase = channelResults.reduce((sum, ch) => sum + ch.bestCase, 0);
+      const totalAdoptionCase = channelResults.reduce((sum, ch) => sum + ch.adoptionCase, 0);
+      const totalWorstCase = channelResults.reduce((sum, ch) => sum + ch.worstCase, 0);
+
+      // Optimisations pour chaque scénario
+      const optimizationBest = findOptimalPacksForVolume(totalBestCase);
+      const optimizationAdoption = findOptimalPacksForVolume(totalAdoptionCase);
+      const optimizationWorst = findOptimalPacksForVolume(totalWorstCase);
+
+      return { 
+        channels: channelResults, 
+        totalBestCase,
+        totalAdoptionCase,
+        totalWorstCase,
+        optimizationBest,
+        optimizationAdoption,
+        optimizationWorst
+      };
     }
 
     function updateUI() {
       const calculations = calculateAll();
       
-      // Update channels grid
       const channelsGrid = document.getElementById('channels-grid');
       channelsGrid.innerHTML = '';
       
@@ -313,70 +229,51 @@
         channelDiv.className = 'bg-white rounded-xl shadow-lg overflow-hidden';
         channelDiv.innerHTML = `
           <div class="${colors.bg} p-4 text-white">
-            <h2 class="text-lg font-bold text-center">${channel.name}</h2>
+            <h2 class="text-lg font-bold">${channel.name}</h2>
           </div>
 
-          <div class="p-4 border-b">
-            <div class="text-center mb-3">
-              <div class="text-3xl font-bold text-gray-800">${messagesPerUser[channelKey]}</div>
-              <div class="text-xs text-gray-500">messages/utilisateur/jour</div>
+          <div class="p-5">
+            <div class="mb-4">
+              <div class="text-center mb-3">
+                <div class="text-3xl font-bold text-gray-800">${messagesPerUser[channelKey]}</div>
+                <div class="text-xs text-gray-500">messages/utilisateur/jour</div>
+              </div>
+              
+              <input
+                type="range"
+                min="1"
+                max="10"
+                step="1"
+                value="${messagesPerUser[channelKey]}"
+                class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer"
+                onchange="updateMessagesPerUser('${channelKey}', parseInt(this.value))"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs text-gray-600">
+              <div>Min: ${formatNumber(channel.minUsers)} users/jour</div>
+              <div>Max: ${formatNumber(channel.maxUsers)} users/jour</div>
             </div>
             
-            <input
-              type="range"
-              min="1"
-              max="10"
-              step="1"
-              value="${messagesPerUser[channelKey]}"
-              class="w-full h-2 bg-gray-200 rounded-lg cursor-pointer mb-2"
-              onchange="updateMessagesPerUser('${channelKey}', parseInt(this.value))"
-            />
-            
-            <div class="grid grid-cols-5 gap-1">
-              ${[1, 2, 3, 5, 10].map(val => `
-                <button
-                  onclick="updateMessagesPerUser('${channelKey}', ${val})"
-                  class="py-1 text-xs font-semibold rounded transition-all ${
-                    messagesPerUser[channelKey] === val ? `${colors.bg} text-white` : `${colors.bgLight} ${colors.text}`
-                  }"
-                >
-                  ${val}
-                </button>
-              `).join('')}
+            <div class="bg-blue-50 p-2 rounded text-xs mt-2 border border-blue-200">
+              <div class="text-blue-800 font-semibold mb-1">Adoption (30%):</div>
+              <div class="text-blue-700">
+                ${formatNumber(channel.minUsers)} + 30% × (${formatNumber(channel.maxUsers)} - ${formatNumber(channel.minUsers)}) = ${formatNumber(result.adoptionUsers)}
+              </div>
             </div>
-            <div class="text-xs text-gray-500 text-center mt-2">
-              💡 Nombre de messages qu'un utilisateur envoie par jour
-            </div>
-          </div>
 
-          <div class="p-4 border-b">
-            <div class="space-y-2">
-              <div class="${colors.bgLight} p-2 rounded text-xs">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Users/mois</span>
-                  <span class="font-bold ${colors.text}">${formatNumber(channel.usersMois)}</span>
-                </div>
+            <div class="mt-4 space-y-2 text-sm">
+              <div class="bg-green-50 p-3 rounded">
+                <div class="font-semibold text-green-800">🟢 Best</div>
+                <div class="text-lg font-bold text-green-600">${result.bestCase.toLocaleString()}</div>
               </div>
-              <div class="${colors.bgLight} p-2 rounded text-xs">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Pic début</span>
-                  <span class="font-bold ${colors.text}">${formatNumber(channel.usersPicDebut)}</span>
-                </div>
+              <div class="bg-blue-50 p-3 rounded">
+                <div class="font-semibold text-blue-800">🔵 Adoption</div>
+                <div class="text-lg font-bold text-blue-600">${result.adoptionCase.toLocaleString()}</div>
               </div>
-            </div>
-          </div>
-
-          <div class="p-4 bg-gray-50">
-            <div class="text-center">
-              <svg class="w-5 h-5 ${colors.text} mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-              </svg>
-              <div class="text-2xl font-bold ${colors.text}">
-                ${result.totalMessages.toLocaleString()}
-              </div>
-              <div class="text-xs text-gray-500 mt-1">messages/mois</div>
-              <div class="text-xs text-gray-400 mt-1">
-                ${formatNumber(channel.usersMois)} users × ${messagesPerUser[channelKey]} msg/jour × 30
+              <div class="bg-red-50 p-3 rounded">
+                <div class="font-semibold text-red-800">🔴 Worst</div>
+                <div class="text-lg font-bold text-red-600">${result.worstCase.toLocaleString()}</div>
               </div>
             </div>
           </div>
@@ -384,80 +281,112 @@
         channelsGrid.appendChild(channelDiv);
       });
 
-      // Update total messages
-      document.getElementById('total-messages').textContent = calculations.totalMessages.toLocaleString();
+      // Update totals
+      document.getElementById('total-best-case').textContent = calculations.totalBestCase.toLocaleString();
+      document.getElementById('total-adoption-case').textContent = calculations.totalAdoptionCase.toLocaleString();
+      document.getElementById('total-worst-case').textContent = calculations.totalWorstCase.toLocaleString();
 
-      // Update optimization
-      const optimizationContainer = document.getElementById('optimization-container');
-      const opt = calculations.optimization;
-      
-      optimizationContainer.innerHTML = `
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden ring-4 ring-green-400">
-          <div class="p-5 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">RECOMMANDÉ</span>
-                <h3 class="text-xl font-bold">${opt.strategy}</h3>
-              </div>
-              <div class="text-right">
-                <div class="text-3xl font-bold">${opt.totalCost.toLocaleString()}€</div>
-                <div class="text-sm opacity-90">par mois</div>
-              </div>
-            </div>
+      // Create packs table with optimizations
+      const packsTable = document.getElementById('packs-table');
+      packsTable.innerHTML = `
+        <div class="p-6">
+          <h3 class="text-2xl font-bold text-gray-800 mb-6">📦 Packs Disponibles</h3>
+          
+          <div class="overflow-x-auto mb-8 bg-gray-50 rounded-lg">
+            <table class="w-full text-sm border-collapse">
+              <thead>
+                <tr class="bg-gray-200 border-b border-gray-300">
+                  <th class="px-4 py-3 text-left font-bold text-gray-800 border-r border-gray-300">Pack</th>
+                  <th class="px-4 py-3 text-right font-bold text-gray-800 border-r border-gray-300">Capacité</th>
+                  <th class="px-4 py-3 text-right font-bold text-gray-800 border-r border-gray-300">Coût Mensuel</th>
+                  <th class="px-4 py-3 text-right font-bold text-gray-800 border-r border-gray-300">Coût Annuel</th>
+                  <th class="px-4 py-3 text-right font-bold text-gray-800">Bots</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${packs.map((pack, idx) => `
+                  <tr class="border-b border-gray-300 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-100'} hover:bg-blue-50 transition">
+                    <td class="px-4 py-3 font-semibold text-gray-800 border-r border-gray-300">${pack.name}</td>
+                    <td class="px-4 py-3 text-right text-gray-700 border-r border-gray-300">${pack.messages.toLocaleString()} msg</td>
+                    <td class="px-4 py-3 text-right font-semibold text-blue-600 border-r border-gray-300">${pack.monthly}€</td>
+                    <td class="px-4 py-3 text-right text-gray-700 border-r border-gray-300">${pack.yearly}€</td>
+                    <td class="px-4 py-3 text-right text-gray-700">${pack.bots}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
           </div>
 
-          <div class="p-6">
-            <div class="grid gap-4 mb-4">
-              ${opt.packs.map(pa => `
-                <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-4 border-2 border-gray-200">
-                  <div class="flex items-start justify-between mb-3">
-                    <div class="flex items-center gap-2">
-                      <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                      </svg>
-                      <div>
-                        <div class="font-bold text-lg text-gray-800">${pa.pack.name}</div>
-                        <div class="text-xs text-gray-600">
-                          ${pa.pack.messages.toLocaleString()} msg • ${pa.pack.bots} bots • ${pa.pack.monthly}€/mois
-                        </div>
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <div class="text-sm font-semibold text-indigo-600">
-                        ${((pa.usage / pa.pack.messages) * 100).toFixed(1)}%
-                      </div>
-                      <div class="text-xs text-gray-500">utilisation</div>
-                    </div>
-                  </div>
-
-                  <div class="flex flex-wrap gap-2">
-                    ${pa.channels.map(ch => {
-                      const chColors = colorClasses[channelsData[ch.channelKey].color];
-                      return `
-                        <div class="px-3 py-1 rounded-full text-xs font-semibold ${chColors.bgLight} ${chColors.text}">
-                          ${ch.name}: ${ch.totalMessages.toLocaleString()} msg
-                        </div>
-                      `;
-                    }).join('')}
-                  </div>
+          <div class="space-y-6">
+            <!-- Best Case -->
+            <div class="bg-green-50 border-2 border-green-400 rounded-lg p-6">
+              <h4 class="font-bold text-green-800 mb-4 text-lg">🟢 Best Case</h4>
+              <div class="grid grid-cols-4 gap-4 text-sm">
+                <div>
+                  <div class="text-gray-600 text-xs">Volume à couvrir</div>
+                  <div class="font-bold text-green-600 text-lg">${calculations.totalBestCase.toLocaleString()}</div>
+                  <div class="text-gray-500 text-xs">messages/mois</div>
                 </div>
-              `).join('')}
+                <div>
+                  <div class="text-gray-600 text-xs">Coût mensuel</div>
+                  <div class="font-bold text-green-600 text-lg">${calculations.optimizationBest.totalCost}€</div>
+                </div>
+                <div>
+                  <div class="text-gray-600 text-xs">Coût annuel</div>
+                  <div class="font-bold text-green-600 text-lg">${(calculations.optimizationBest.totalCost * 12).toLocaleString()}€</div>
+                </div>
+                <div>
+                  <div class="text-gray-600 text-xs">Packs recommandés</div>
+                  <div class="font-bold text-green-600">${calculations.optimizationBest.packs.map(p => p.name).join(' + ')}</div>
+                </div>
+              </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-              <div class="text-center">
-                <div class="text-xs text-gray-600 mb-1">Coût Annuel</div>
-                <div class="text-xl font-bold text-gray-800">${opt.totalYearly.toLocaleString()}€</div>
-              </div>
-              <div class="text-center">
-                <div class="text-xs text-gray-600 mb-1">Économie vs Mensuel</div>
-                <div class="text-xl font-bold text-green-600">
-                  ${(opt.totalCost * 12 - opt.totalYearly).toLocaleString()}€
+            <!-- Adoption Progressive -->
+            <div class="bg-blue-50 border-2 border-blue-400 rounded-lg p-6">
+              <h4 class="font-bold text-blue-800 mb-4 text-lg">🔵 Adoption Progressive (30%)</h4>
+              <div class="grid grid-cols-4 gap-4 text-sm">
+                <div>
+                  <div class="text-gray-600 text-xs">Volume à couvrir</div>
+                  <div class="font-bold text-blue-600 text-lg">${calculations.totalAdoptionCase.toLocaleString()}</div>
+                  <div class="text-gray-500 text-xs">messages/mois</div>
+                </div>
+                <div>
+                  <div class="text-gray-600 text-xs">Coût mensuel</div>
+                  <div class="font-bold text-blue-600 text-lg">${calculations.optimizationAdoption.totalCost}€</div>
+                </div>
+                <div>
+                  <div class="text-gray-600 text-xs">Coût annuel</div>
+                  <div class="font-bold text-blue-600 text-lg">${(calculations.optimizationAdoption.totalCost * 12).toLocaleString()}€</div>
+                </div>
+                <div>
+                  <div class="text-gray-600 text-xs">Packs recommandés</div>
+                  <div class="font-bold text-blue-600">${calculations.optimizationAdoption.packs.map(p => p.name).join(' + ')}</div>
                 </div>
               </div>
-              <div class="text-center">
-                <div class="text-xs text-gray-600 mb-1">Utilisation Globale</div>
-                <div class="text-xl font-bold text-indigo-600">${opt.utilization}%</div>
+            </div>
+
+            <!-- Worst Case -->
+            <div class="bg-red-50 border-2 border-red-400 rounded-lg p-6">
+              <h4 class="font-bold text-red-800 mb-4 text-lg">🔴 Worst Case</h4>
+              <div class="grid grid-cols-4 gap-4 text-sm">
+                <div>
+                  <div class="text-gray-600 text-xs">Volume à couvrir</div>
+                  <div class="font-bold text-red-600 text-lg">${calculations.totalWorstCase.toLocaleString()}</div>
+                  <div class="text-gray-500 text-xs">messages/mois</div>
+                </div>
+                <div>
+                  <div class="text-gray-600 text-xs">Coût mensuel</div>
+                  <div class="font-bold text-red-600 text-lg">${calculations.optimizationWorst.totalCost}€</div>
+                </div>
+                <div>
+                  <div class="text-gray-600 text-xs">Coût annuel</div>
+                  <div class="font-bold text-red-600 text-lg">${(calculations.optimizationWorst.totalCost * 12).toLocaleString()}€</div>
+                </div>
+                <div>
+                  <div class="text-gray-600 text-xs">Packs recommandés</div>
+                  <div class="font-bold text-red-600">${calculations.optimizationWorst.packs.map(p => p.name).join(' + ')}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -470,7 +399,6 @@
       updateUI();
     }
 
-    // Initial render
     updateUI();
   </script>
 </body>
