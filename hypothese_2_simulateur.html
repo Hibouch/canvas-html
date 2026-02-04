@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulateur Chatbot - Approche Fournisseur</title>
+  <title>Simulateur Chatbot - Hypothèse 2 (Smartly)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     input[type="range"] {
@@ -20,95 +20,66 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
         </svg>
         <div class="text-center">
-          <h1 class="text-3xl font-bold text-gray-800">Hypothèse 2 - Approche Fournisseur (Benchmark Smartly)</h1>
-          <p class="text-sm text-gray-600 mt-1">Hypothèse 2 : 15% d'interaction • Scénarios P1 (3 msg/jour) & P2 (5 msg/jour)</p>
+          <h1 class="text-3xl font-bold text-gray-800">Simulateur Chatbot</h1>
+          <p class="text-sm text-gray-600 mt-1">Hypothèse 2 : Approche Fournisseur (Smartly - 15% taux d'interaction)</p>
         </div>
       </div>
     </div>
 
-    <!-- Sélection du scénario -->
-    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-lg p-6 mb-6 text-white">
-      <div class="text-center mb-4">
-        <h2 class="text-2xl font-bold mb-2">Choisissez votre scénario</h2>
-        <p class="text-sm opacity-90">Sélectionnez le nombre de messages par utilisateur actif par jour</p>
-      </div>
-      <div class="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
-        <button
-          id="scenario-p1"
-          onclick="setScenario('P1')"
-          class="scenario-btn bg-white/20 hover:bg-white/30 backdrop-blur-sm p-6 rounded-xl transition-all transform hover:scale-105 border-4"
-        >
-          <div class="text-4xl font-bold mb-2">P1</div>
-          <div class="text-lg font-semibold mb-1">3 messages/jour</div>
-          <div class="text-sm opacity-90">Scénario prudent</div>
-        </button>
-        <button
-          id="scenario-p2"
-          onclick="setScenario('P2')"
-          class="scenario-btn bg-white/20 hover:bg-white/30 backdrop-blur-sm p-6 rounded-xl transition-all transform hover:scale-105 border-4"
-        >
-          <div class="text-4xl font-bold mb-2">P2</div>
-          <div class="text-lg font-semibold mb-1">5 messages/jour</div>
-          <div class="text-sm opacity-90">Scénario optimiste</div>
-        </button>
+    <!-- Stratégies P1 et P2 -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6 border-2 border-purple-400">
+      <h3 class="text-lg font-bold text-gray-800 mb-4">📊 Stratégies d'Interaction</h3>
+      <div class="grid grid-cols-2 gap-6">
+        <div class="bg-blue-50 p-4 rounded-lg border-2 border-blue-400">
+          <h4 class="font-bold text-blue-800 mb-2">📱 P1 : Messages Modérés</h4>
+          <div class="text-2xl font-bold text-blue-600">3 messages/jour</div>
+          <div class="text-xs text-gray-600 mt-1">Par utilisateur interagissant</div>
+        </div>
+        <div class="bg-orange-50 p-4 rounded-lg border-2 border-orange-400">
+          <h4 class="font-bold text-orange-800 mb-2">💬 P2 : Messages Intensifs</h4>
+          <div class="text-2xl font-bold text-orange-600">5 messages/jour</div>
+          <div class="text-xs text-gray-600 mt-1">Par utilisateur interagissant</div>
+        </div>
       </div>
     </div>
 
     <!-- 4 colonnes canaux -->
-    <div id="channels-grid" class="grid grid-cols-4 gap-4 mb-6"></div>
+    <div id="channels-grid" class="grid grid-cols-2 gap-6 mb-8"></div>
 
-    <!-- Total Messages -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-6 text-center">
-      <h3 class="text-lg font-bold text-gray-800 mb-2">Volume Total Estimé</h3>
-      <div id="total-messages" class="text-5xl font-bold text-indigo-600">0</div>
-      <div class="text-sm text-gray-600 mt-1">messages par mois</div>
-    </div>
+    <!-- Résumé des totaux par scénario -->
+    <div id="scenarios-summary" class="grid grid-cols-4 gap-4 mb-8"></div>
 
-    
+    <!-- Tableau des packs recommandés -->
+    <div id="packs-table" class="bg-white rounded-xl shadow-lg overflow-hidden"></div>
+
+  </div>
 
   <script>
-    // State
-    let currentScenario = 'P1'; // P1 = 3 msg/jour, P2 = 5 msg/jour
-    const INTERACTION_RATE = 0.15; // 15% d'interaction
-
-    const scenarioMessages = {
-      P1: 3,
-      P2: 5
-    };
-
-    // Data
+    // Données réelles
     const channelsData = {
-      eshop: {
-        name: 'E-shop',
-        color: 'green',
-        usersActive: 187000,
-        newUsers: 167000,
-        usersPicDebut: 2500,
-        usersMois: 2000
-      },
-      siteWeb: {
-        name: 'Portail',
+      portal: {
+        name: 'www.tunisietelecom.tn',
         color: 'blue',
-        usersActive: 1300000,
-        newUsers: 2300000,
-        usersPicDebut: 12000,
-        usersMois: 10000
+        maxUsers: 21237,
+        minUsers: 6041
+      },
+      eshop: {
+        name: 'eshop.tunisietelecom.tn',
+        color: 'green',
+        maxUsers: 2703,
+        minUsers: 709
       },
       myTTWeb: {
-        name: 'MyTT Web',
+        name: 'mytt.tunisietelecom.tn',
         color: 'indigo',
-        usersActive: 756000,
-        newUsers: 610000,
-        usersPicDebut: 20000,
-        usersMois: 13000
+        maxUsers: 21843,
+        minUsers: 3946
       },
       myTTApp: {
-        name: 'MyTT App',
+        name: 'My TT App',
         color: 'purple',
-        usersActive: 942000,
-        newUsers: 556000,
-        usersPicDebut: 90000,
-        usersMois: 60000
+        maxUsers: 93613,
+        minUsers: 38580
       }
     };
 
@@ -129,213 +100,125 @@
       purple: { bg: 'bg-purple-500', bgLight: 'bg-purple-50', text: 'text-purple-600' }
     };
 
-    function setScenario(scenario) {
-      currentScenario = scenario;
-      
-      // Update button styles
-      document.getElementById('scenario-p1').className = 
-        'scenario-btn bg-white/20 hover:bg-white/30 backdrop-blur-sm p-6 rounded-xl transition-all transform hover:scale-105 border-4 ' +
-        (scenario === 'P1' ? 'border-yellow-400 ring-4 ring-yellow-300' : 'border-transparent');
-      
-      document.getElementById('scenario-p2').className = 
-        'scenario-btn bg-white/20 hover:bg-white/30 backdrop-blur-sm p-6 rounded-xl transition-all transform hover:scale-105 border-4 ' +
-        (scenario === 'P2' ? 'border-yellow-400 ring-4 ring-yellow-300' : 'border-transparent');
-      
-      updateUI();
-    }
+    const INTERACTION_RATE = 0.15; // 15% des visiteurs
+    const MESSAGES_P1 = 3; // P1: 3 messages/jour
+    const MESSAGES_P2 = 5; // P2: 5 messages/jour
 
     function formatNumber(num) {
       if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
       if (num >= 1000) return (num / 1000).toFixed(0) + 'K';
-      return num.toString();
+      return Math.round(num).toString();
     }
 
     function calculateChannel(channelKey) {
       const channel = channelsData[channelKey];
-      const msgPerDay = scenarioMessages[currentScenario];
-      const activeUsers = Math.round(channel.usersMois * INTERACTION_RATE);
-      const totalMessages = Math.round(activeUsers * msgPerDay * 30);
-      return { channelKey, name: channel.name, totalMessages, activeUsers };
+      
+      // Utilisateurs interagissants (15% des visiteurs)
+      const minInteracting = Math.round(channel.minUsers * INTERACTION_RATE);
+      const maxInteracting = Math.round(channel.maxUsers * INTERACTION_RATE);
+      const avgInteracting = Math.round((channel.minUsers + 0.30 * (channel.maxUsers - channel.minUsers)) * INTERACTION_RATE);
+      
+      // P1: 3 messages/jour
+      const p1Best = Math.round(minInteracting * MESSAGES_P1 * 30);
+      const p1Avg = Math.round(avgInteracting * MESSAGES_P1 * 30);
+      const p1Worst = Math.round(maxInteracting * MESSAGES_P1 * 30);
+      
+      // P2: 5 messages/jour
+      const p2Best = Math.round(minInteracting * MESSAGES_P2 * 30);
+      const p2Avg = Math.round(avgInteracting * MESSAGES_P2 * 30);
+      const p2Worst = Math.round(maxInteracting * MESSAGES_P2 * 30);
+      
+      return { 
+        channelKey, 
+        name: channel.name,
+        minUsers: channel.minUsers,
+        maxUsers: channel.maxUsers,
+        minInteracting,
+        maxInteracting,
+        avgInteracting,
+        p1Best, p1Avg, p1Worst,
+        p2Best, p2Avg, p2Worst
+      };
     }
 
-    function findBestPacksForVolume(targetMessages) {
-      const largestPack = packs[packs.length - 1];
-      const numLargestPacks = Math.floor(targetMessages / largestPack.messages);
-      const remaining = targetMessages - (numLargestPacks * largestPack.messages);
-      
+    function findOptimalPacksForVolume(targetMessages) {
       let bestSolution = null;
       let bestScore = Infinity;
 
-      if (numLargestPacks > 0) {
-        const smallerPack = packs.find(p => p.messages >= remaining);
-        if (smallerPack) {
-          const solution = [];
-          for (let i = 0; i < numLargestPacks; i++) {
-            solution.push(largestPack);
-          }
-          if (remaining > 0) {
-            solution.push(smallerPack);
-          }
-          
-          const totalCap = solution.reduce((sum, p) => sum + p.messages, 0);
-          const totalCost = solution.reduce((sum, p) => sum + p.monthly, 0);
-          const utilization = (targetMessages / totalCap) * 100;
-          const waste = totalCap - targetMessages;
-          const score = totalCost + (waste * 0.01);
-          
-          if (utilization >= 70) {
-            bestSolution = { packs: solution, totalCapacity: totalCap, totalCost, utilization, waste };
-            bestScore = score;
-          }
-        }
-      }
-
-      for (let numPacks = 1; numPacks <= 5; numPacks++) {
-        const solution = findCombination(targetMessages, numPacks);
-        if (solution) {
-          const score = solution.totalCost + (solution.waste * 0.01);
-          if (score < bestScore && solution.utilization >= 70) {
-            bestScore = score;
-            bestSolution = solution;
-          }
-        }
-      }
-
-      if (!bestSolution) {
-        const numNeeded = Math.ceil(targetMessages / largestPack.messages);
-        const solution = [];
-        for (let i = 0; i < numNeeded; i++) {
-          solution.push(largestPack);
-        }
-        const totalCap = solution.reduce((sum, p) => sum + p.messages, 0);
-        const totalCost = solution.reduce((sum, p) => sum + p.monthly, 0);
-        const utilization = (targetMessages / totalCap) * 100;
-        const waste = totalCap - targetMessages;
+      function tryPackCombination(packIndices) {
+        const selectedPacks = packIndices.map(i => packs[i]);
+        const totalCapacity = selectedPacks.reduce((sum, p) => sum + p.messages, 0);
         
-        bestSolution = { packs: solution, totalCapacity: totalCap, totalCost, utilization, waste };
-      }
-
-      return bestSolution;
-    }
-
-    function findCombination(targetMessages, numPacks) {
-      let bestCombo = null;
-      let bestScore = Infinity;
-
-      function tryCombo(indices) {
-        const combo = indices.map(i => packs[i]);
-        const totalCap = combo.reduce((sum, p) => sum + p.messages, 0);
-        
-        if (totalCap >= targetMessages) {
-          const totalCost = combo.reduce((sum, p) => sum + p.monthly, 0);
-          const waste = totalCap - targetMessages;
-          const utilization = (targetMessages / totalCap) * 100;
-          const score = totalCost + (waste * 0.01);
+        if (totalCapacity >= targetMessages) {
+          const totalCost = selectedPacks.reduce((sum, p) => sum + p.monthly, 0);
+          const utilization = (targetMessages / totalCapacity) * 100;
+          const wastedCapacity = totalCapacity - targetMessages;
           
-          if (utilization >= 70 && score < bestScore) {
+          const score = totalCost + (wastedCapacity * 0.001);
+          
+          if (utilization > 0 && score < bestScore) {
             bestScore = score;
-            bestCombo = {
-              packs: combo,
-              totalCapacity: totalCap,
+            bestSolution = {
+              packs: selectedPacks,
+              totalCapacity,
               totalCost,
-              utilization,
-              waste
+              utilization: utilization.toFixed(1),
+              wastedCapacity
             };
           }
         }
       }
 
       function generateCombinations(start, current) {
-        if (current.length === numPacks) {
-          tryCombo(current);
-          return;
+        if (current.length > 0) {
+          tryPackCombination(current);
         }
         
-        for (let i = start; i < packs.length; i++) {
-          generateCombinations(i, [...current, i]);
+        if (current.length < 7) {
+          for (let i = start; i < packs.length; i++) {
+            generateCombinations(i + 1, [...current, i]);
+          }
         }
       }
 
       generateCombinations(0, []);
-      return bestCombo;
-    }
-
-    function findOptimalPackCombination(channels) {
-      const totalMessages = channels.reduce((sum, ch) => sum + ch.totalMessages, 0);
-      const sortedChannels = [...channels].sort((a, b) => b.totalMessages - a.totalMessages);
       
-      const optimizedAllocation = [];
-      let remainingChannels = [...sortedChannels];
-      
-      while (remainingChannels.length > 0) {
-        const current = remainingChannels.shift();
-        const bestCombo = findBestPacksForVolume(current.totalMessages);
-        
-        if (bestCombo) {
-          if (bestCombo.packs.length === 1) {
-            let grouped = false;
-            for (let i = 0; i < remainingChannels.length; i++) {
-              const partner = remainingChannels[i];
-              const combinedMessages = current.totalMessages + partner.totalMessages;
-              const combinedCombo = findBestPacksForVolume(combinedMessages);
-              
-              if (combinedCombo && combinedCombo.packs.length <= 2 && combinedCombo.utilization >= 70) {
-                combinedCombo.packs.forEach(pack => {
-                  optimizedAllocation.push({
-                    pack,
-                    channels: [current, partner],
-                    usage: combinedMessages / combinedCombo.packs.length
-                  });
-                });
-                remainingChannels.splice(i, 1);
-                grouped = true;
-                break;
-              }
-            }
-            
-            if (!grouped) {
-              optimizedAllocation.push({
-                pack: bestCombo.packs[0],
-                channels: [current],
-                usage: current.totalMessages
-              });
-            }
-          } else {
-            bestCombo.packs.forEach(pack => {
-              optimizedAllocation.push({
-                pack,
-                channels: [current],
-                usage: current.totalMessages / bestCombo.packs.length
-              });
-            });
-          }
-        }
-      }
-      
-      const totalCost = optimizedAllocation.reduce((sum, pa) => sum + pa.pack.monthly, 0);
-      const totalYearly = totalCost * 12 * 0.9;
-      const totalCap = optimizedAllocation.reduce((sum, pa) => sum + pa.pack.messages, 0);
-      
-      return {
-        strategy: 'Distribution Optimisée',
-        packs: optimizedAllocation,
-        totalCost,
-        totalYearly,
-        utilization: ((totalMessages / totalCap) * 100).toFixed(1)
-      };
+      return bestSolution || { packs: [], totalCapacity: 0, totalCost: 0, utilization: 0 };
     }
 
     function calculateAll() {
       const channelResults = Object.keys(channelsData).map(key => calculateChannel(key));
-      const totalMessages = channelResults.reduce((sum, ch) => sum + ch.totalMessages, 0);
-      const optimization = findOptimalPackCombination(channelResults);
       
-      return { channels: channelResults, totalMessages, optimization };
+      // P1 totals
+      const p1BestTotal = channelResults.reduce((sum, ch) => sum + ch.p1Best, 0);
+      const p1AvgTotal = channelResults.reduce((sum, ch) => sum + ch.p1Avg, 0);
+      const p1WorstTotal = channelResults.reduce((sum, ch) => sum + ch.p1Worst, 0);
+      
+      // P2 totals
+      const p2BestTotal = channelResults.reduce((sum, ch) => sum + ch.p2Best, 0);
+      const p2AvgTotal = channelResults.reduce((sum, ch) => sum + ch.p2Avg, 0);
+      const p2WorstTotal = channelResults.reduce((sum, ch) => sum + ch.p2Worst, 0);
+      
+      // Optimisations
+      const optimizationP1Best = findOptimalPacksForVolume(p1BestTotal);
+      const optimizationP1Avg = findOptimalPacksForVolume(p1AvgTotal);
+      const optimizationP1Worst = findOptimalPacksForVolume(p1WorstTotal);
+      
+      const optimizationP2Best = findOptimalPacksForVolume(p2BestTotal);
+      const optimizationP2Avg = findOptimalPacksForVolume(p2AvgTotal);
+      const optimizationP2Worst = findOptimalPacksForVolume(p2WorstTotal);
+      
+      return { 
+        channels: channelResults,
+        p1BestTotal, p1AvgTotal, p1WorstTotal,
+        p2BestTotal, p2AvgTotal, p2WorstTotal,
+        optimizationP1Best, optimizationP1Avg, optimizationP1Worst,
+        optimizationP2Best, optimizationP2Avg, optimizationP2Worst
+      };
     }
 
     function updateUI() {
       const calculations = calculateAll();
-      const msgPerDay = scenarioMessages[currentScenario];
       
       const channelsGrid = document.getElementById('channels-grid');
       channelsGrid.innerHTML = '';
@@ -349,59 +232,56 @@
         channelDiv.className = 'bg-white rounded-xl shadow-lg overflow-hidden';
         channelDiv.innerHTML = `
           <div class="${colors.bg} p-4 text-white">
-            <h2 class="text-lg font-bold text-center">${channel.name}</h2>
+            <h2 class="text-lg font-bold">${channel.name}</h2>
           </div>
 
-          <div class="p-4 border-b">
-            <div class="text-center mb-3">
-              <div class="text-sm text-gray-600 mb-2">Scénario actif</div>
-              <div class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-full">
-                <span class="text-2xl font-bold">${currentScenario}</span>
-                <span class="text-sm">• ${msgPerDay} msg/jour</span>
+          <div class="p-5">
+            <div class="mb-4 bg-purple-50 p-3 rounded border border-purple-200">
+              <div class="text-xs text-purple-800 font-semibold mb-2">Taux d'interaction: 15%</div>
+              <div class="text-xs text-purple-700">
+                Min: ${formatNumber(result.minUsers)} × 15% = ${formatNumber(result.minInteracting)} users<br>
+                Avg: ${formatNumber(result.avgInteracting)} users<br>
+                Max: ${formatNumber(result.maxUsers)} × 15% = ${formatNumber(result.maxInteracting)} users
               </div>
             </div>
-          </div>
 
-          <div class="p-4 border-b">
-            <div class="space-y-2">
-              <div class="${colors.bgLight} p-2 rounded text-xs">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Visiteurs/mois</span>
-                  <span class="font-bold ${colors.text}">${formatNumber(channel.usersMois)}</span>
+            <div class="grid grid-cols-2 gap-3">
+              <!-- P1 -->
+              <div class="border-2 border-blue-400 rounded-lg p-3">
+                <div class="font-bold text-blue-800 text-sm mb-2">📱 P1 (3 msg/jour)</div>
+                <div class="space-y-1 text-xs">
+                  <div class="bg-green-50 p-2 rounded">
+                    <div class="text-gray-600">Best</div>
+                    <div class="font-bold text-green-600">${result.p1Best.toLocaleString()}</div>
+                  </div>
+                  <div class="bg-blue-50 p-2 rounded">
+                    <div class="text-gray-600">Avg</div>
+                    <div class="font-bold text-blue-600">${result.p1Avg.toLocaleString()}</div>
+                  </div>
+                  <div class="bg-red-50 p-2 rounded">
+                    <div class="text-gray-600">Worst</div>
+                    <div class="font-bold text-red-600">${result.p1Worst.toLocaleString()}</div>
+                  </div>
                 </div>
               </div>
-              <div class="${colors.bgLight} p-2 rounded text-xs">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Taux interaction</span>
-                  <span class="font-bold ${colors.text}">15%</span>
-                </div>
-              </div>
-              <div class="bg-yellow-50 p-2 rounded text-xs border-2 border-yellow-300">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">👤 Users actifs</span>
-                  <span class="font-bold text-yellow-700">${formatNumber(result.activeUsers)}</span>
-                </div>
-              </div>
-              <div class="${colors.bgLight} p-2 rounded text-xs">
-                <div class="flex justify-between">
-                  <span class="text-gray-600">Pic début</span>
-                  <span class="font-bold ${colors.text}">${formatNumber(channel.usersPicDebut)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <div class="p-4 bg-gray-50">
-            <div class="text-center">
-              <svg class="w-5 h-5 ${colors.text} mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-              </svg>
-              <div class="text-2xl font-bold ${colors.text}">
-                ${result.totalMessages.toLocaleString()}
-              </div>
-              <div class="text-xs text-gray-500 mt-1">messages/mois</div>
-              <div class="text-xs text-gray-400 mt-1">
-                ${formatNumber(result.activeUsers)} users × ${msgPerDay} msg/jour × 30
+              <!-- P2 -->
+              <div class="border-2 border-orange-400 rounded-lg p-3">
+                <div class="font-bold text-orange-800 text-sm mb-2">💬 P2 (5 msg/jour)</div>
+                <div class="space-y-1 text-xs">
+                  <div class="bg-green-50 p-2 rounded">
+                    <div class="text-gray-600">Best</div>
+                    <div class="font-bold text-green-600">${result.p2Best.toLocaleString()}</div>
+                  </div>
+                  <div class="bg-blue-50 p-2 rounded">
+                    <div class="text-gray-600">Avg</div>
+                    <div class="font-bold text-blue-600">${result.p2Avg.toLocaleString()}</div>
+                  </div>
+                  <div class="bg-red-50 p-2 rounded">
+                    <div class="text-gray-600">Worst</div>
+                    <div class="font-bold text-red-600">${result.p2Worst.toLocaleString()}</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -409,78 +289,120 @@
         channelsGrid.appendChild(channelDiv);
       });
 
-      document.getElementById('total-messages').textContent = calculations.totalMessages.toLocaleString();
+      // Résumé des scénarios
+      const scenariosSummary = document.getElementById('scenarios-summary');
+      scenariosSummary.innerHTML = `
+        <div class="bg-blue-50 border-2 border-blue-400 rounded-lg p-4 text-center">
+          <div class="text-xs text-blue-800 font-bold mb-2">P1 - Best Case 🟢</div>
+          <div class="text-2xl font-bold text-blue-600">${calculations.p1BestTotal.toLocaleString()}</div>
+          <div class="text-xs text-gray-600">messages/mois</div>
+        </div>
+        <div class="bg-blue-50 border-2 border-blue-400 rounded-lg p-4 text-center">
+          <div class="text-xs text-blue-800 font-bold mb-2">P1 - Adoption (30%) 🔵</div>
+          <div class="text-2xl font-bold text-blue-600">${calculations.p1AvgTotal.toLocaleString()}</div>
+          <div class="text-xs text-gray-600">messages/mois</div>
+        </div>
+        <div class="bg-blue-50 border-2 border-blue-400 rounded-lg p-4 text-center">
+          <div class="text-xs text-blue-800 font-bold mb-2">P1 - Worst Case 🔴</div>
+          <div class="text-2xl font-bold text-blue-600">${calculations.p1WorstTotal.toLocaleString()}</div>
+          <div class="text-xs text-gray-600">messages/mois</div>
+        </div>
+        <div class="bg-orange-50 border-2 border-orange-400 rounded-lg p-4 text-center">
+          <div class="text-xs text-orange-800 font-bold mb-2">P2 - Best Case 🟢</div>
+          <div class="text-2xl font-bold text-orange-600">${calculations.p2BestTotal.toLocaleString()}</div>
+          <div class="text-xs text-gray-600">messages/mois</div>
+        </div>
+        <div class="bg-orange-50 border-2 border-orange-400 rounded-lg p-4 text-center">
+          <div class="text-xs text-orange-800 font-bold mb-2">P2 - Adoption (30%) 🔵</div>
+          <div class="text-2xl font-bold text-orange-600">${calculations.p2AvgTotal.toLocaleString()}</div>
+          <div class="text-xs text-gray-600">messages/mois</div>
+        </div>
+        <div class="bg-orange-50 border-2 border-orange-400 rounded-lg p-4 text-center">
+          <div class="text-xs text-orange-800 font-bold mb-2">P2 - Worst Case 🔴</div>
+          <div class="text-2xl font-bold text-orange-600">${calculations.p2WorstTotal.toLocaleString()}</div>
+          <div class="text-xs text-gray-600">messages/mois</div>
+        </div>
+      `;
 
-      const optimizationContainer = document.getElementById('optimization-container');
-      const opt = calculations.optimization;
-      
-      optimizationContainer.innerHTML = `
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden ring-4 ring-green-400">
-          <div class="p-5 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">RECOMMANDÉ</span>
-                <h3 class="text-xl font-bold">${opt.strategy}</h3>
-              </div>
-              <div class="text-right">
-                <div class="text-3xl font-bold">${opt.totalCost.toLocaleString()}€</div>
-                <div class="text-sm opacity-90">par mois</div>
-              </div>
-            </div>
+      // Tableau des packs
+      const packsTable = document.getElementById('packs-table');
+      packsTable.innerHTML = `
+        <div class="p-6">
+          <h3 class="text-2xl font-bold text-gray-800 mb-6">📦 Packs Disponibles</h3>
+          
+          <div class="overflow-x-auto mb-8 bg-gray-50 rounded-lg">
+            <table class="w-full text-sm border-collapse">
+              <thead>
+                <tr class="bg-gray-200 border-b border-gray-300">
+                  <th class="px-4 py-3 text-left font-bold text-gray-800 border-r border-gray-300">Pack</th>
+                  <th class="px-4 py-3 text-right font-bold text-gray-800 border-r border-gray-300">Capacité</th>
+                  <th class="px-4 py-3 text-right font-bold text-gray-800 border-r border-gray-300">Coût Mensuel</th>
+                  <th class="px-4 py-3 text-right font-bold text-gray-800 border-r border-gray-300">Coût Annuel</th>
+                  <th class="px-4 py-3 text-right font-bold text-gray-800">Bots</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${packs.map((pack, idx) => `
+                  <tr class="border-b border-gray-300 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-100'} hover:bg-blue-50 transition">
+                    <td class="px-4 py-3 font-semibold text-gray-800 border-r border-gray-300">${pack.name}</td>
+                    <td class="px-4 py-3 text-right text-gray-700 border-r border-gray-300">${pack.messages.toLocaleString()} msg</td>
+                    <td class="px-4 py-3 text-right font-semibold text-blue-600 border-r border-gray-300">${pack.monthly}€</td>
+                    <td class="px-4 py-3 text-right text-gray-700 border-r border-gray-300">${pack.yearly}€</td>
+                    <td class="px-4 py-3 text-right text-gray-700">${pack.bots}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
           </div>
 
-          <div class="p-6">
-            <div class="grid gap-4 mb-4">
-              ${opt.packs.map(pa => `
-                <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-4 border-2 border-gray-200">
-                  <div class="flex items-start justify-between mb-3">
-                    <div class="flex items-center gap-2">
-                      <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                      </svg>
-                      <div>
-                        <div class="font-bold text-lg text-gray-800">${pa.pack.name}</div>
-                        <div class="text-xs text-gray-600">
-                          ${pa.pack.messages.toLocaleString()} msg • ${pa.pack.bots} bots • ${pa.pack.monthly}€/mois
-                        </div>
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <div class="text-sm font-semibold text-indigo-600">
-                        ${((pa.usage / pa.pack.messages) * 100).toFixed(1)}%
-                      </div>
-                      <div class="text-xs text-gray-500">utilisation</div>
-                    </div>
-                  </div>
-
-                  <div class="flex flex-wrap gap-2">
-                    ${pa.channels.map(ch => {
-                      const chColors = colorClasses[channelsData[ch.channelKey].color];
-                      return `
-                        <div class="px-3 py-1 rounded-full text-xs font-semibold ${chColors.bgLight} ${chColors.text}">
-                          ${ch.name}: ${ch.totalMessages.toLocaleString()} msg
-                        </div>
-                      `;
-                    }).join('')}
-                  </div>
+          <div class="space-y-6">
+            <!-- P1 Scenarios -->
+            <div class="bg-blue-50 border-2 border-blue-400 rounded-lg p-6">
+              <h4 class="font-bold text-blue-800 mb-4 text-lg">📱 P1 (3 messages/jour)</h4>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded border border-blue-200">
+                  <div class="text-xs text-gray-600 font-semibold mb-2">Best Case 🟢</div>
+                  <div class="text-lg font-bold text-blue-600 mb-2">${calculations.p1BestTotal.toLocaleString()} msg</div>
+                  <div class="text-xs text-gray-600 mb-3">Coût: <span class="font-bold">${calculations.optimizationP1Best.totalCost}€/mois</span></div>
+                  <div class="text-xs bg-blue-50 p-2 rounded">Packs: <span class="font-bold">${calculations.optimizationP1Best.packs.map(p => p.name).join(' + ') || 'N/A'}</span></div>
                 </div>
-              `).join('')}
+                <div class="bg-white p-4 rounded border border-blue-200">
+                  <div class="text-xs text-gray-600 font-semibold mb-2">Adoption (30%) 🔵</div>
+                  <div class="text-lg font-bold text-blue-600 mb-2">${calculations.p1AvgTotal.toLocaleString()} msg</div>
+                  <div class="text-xs text-gray-600 mb-3">Coût: <span class="font-bold">${calculations.optimizationP1Avg.totalCost}€/mois</span></div>
+                  <div class="text-xs bg-blue-50 p-2 rounded">Packs: <span class="font-bold">${calculations.optimizationP1Avg.packs.map(p => p.name).join(' + ') || 'N/A'}</span></div>
+                </div>
+                <div class="bg-white p-4 rounded border border-blue-200">
+                  <div class="text-xs text-gray-600 font-semibold mb-2">Worst Case 🔴</div>
+                  <div class="text-lg font-bold text-blue-600 mb-2">${calculations.p1WorstTotal.toLocaleString()} msg</div>
+                  <div class="text-xs text-gray-600 mb-3">Coût: <span class="font-bold">${calculations.optimizationP1Worst.totalCost}€/mois</span></div>
+                  <div class="text-xs bg-blue-50 p-2 rounded">Packs: <span class="font-bold">${calculations.optimizationP1Worst.packs.map(p => p.name).join(' + ') || 'N/A'}</span></div>
+                </div>
+              </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg">
-              <div class="text-center">
-                <div class="text-xs text-gray-600 mb-1">Coût Annuel</div>
-                <div class="text-xl font-bold text-gray-800">${opt.totalYearly.toLocaleString()}€</div>
-              </div>
-              <div class="text-center">
-                <div class="text-xs text-gray-600 mb-1">Économie vs Mensuel</div>
-                <div class="text-xl font-bold text-green-600">
-                  ${(opt.totalCost * 12 - opt.totalYearly).toLocaleString()}€
+            <!-- P2 Scenarios -->
+            <div class="bg-orange-50 border-2 border-orange-400 rounded-lg p-6">
+              <h4 class="font-bold text-orange-800 mb-4 text-lg">💬 P2 (5 messages/jour)</h4>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded border border-orange-200">
+                  <div class="text-xs text-gray-600 font-semibold mb-2">Best Case 🟢</div>
+                  <div class="text-lg font-bold text-orange-600 mb-2">${calculations.p2BestTotal.toLocaleString()} msg</div>
+                  <div class="text-xs text-gray-600 mb-3">Coût: <span class="font-bold">${calculations.optimizationP2Best.totalCost}€/mois</span></div>
+                  <div class="text-xs bg-orange-50 p-2 rounded">Packs: <span class="font-bold">${calculations.optimizationP2Best.packs.map(p => p.name).join(' + ') || 'N/A'}</span></div>
                 </div>
-              </div>
-              <div class="text-center">
-                <div class="text-xs text-gray-600 mb-1">Utilisation Globale</div>
-                <div class="text-xl font-bold text-indigo-600">${opt.utilization}%</div>
+                <div class="bg-white p-4 rounded border border-orange-200">
+                  <div class="text-xs text-gray-600 font-semibold mb-2">Adoption (30%) 🔵</div>
+                  <div class="text-lg font-bold text-orange-600 mb-2">${calculations.p2AvgTotal.toLocaleString()} msg</div>
+                  <div class="text-xs text-gray-600 mb-3">Coût: <span class="font-bold">${calculations.optimizationP2Avg.totalCost}€/mois</span></div>
+                  <div class="text-xs bg-orange-50 p-2 rounded">Packs: <span class="font-bold">${calculations.optimizationP2Avg.packs.map(p => p.name).join(' + ') || 'N/A'}</span></div>
+                </div>
+                <div class="bg-white p-4 rounded border border-orange-200">
+                  <div class="text-xs text-gray-600 font-semibold mb-2">Worst Case 🔴</div>
+                  <div class="text-lg font-bold text-orange-600 mb-2">${calculations.p2WorstTotal.toLocaleString()} msg</div>
+                  <div class="text-xs text-gray-600 mb-3">Coût: <span class="font-bold">${calculations.optimizationP2Worst.totalCost}€/mois</span></div>
+                  <div class="text-xs bg-orange-50 p-2 rounded">Packs: <span class="font-bold">${calculations.optimizationP2Worst.packs.map(p => p.name).join(' + ') || 'N/A'}</span></div>
+                </div>
               </div>
             </div>
           </div>
@@ -488,8 +410,7 @@
       `;
     }
 
-    // Initial render
-    setScenario('P1');
+    updateUI();
   </script>
 </body>
 </html>
