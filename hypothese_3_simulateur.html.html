@@ -26,8 +26,8 @@
       </div>
     </div>
 
-    <!-- 4 colonnes canaux avec données réelles -->
-    <div id="channels-grid" class="grid grid-cols-2 gap-6 mb-8"></div>
+    <!-- 3 colonnes canaux avec données réelles -->
+    <div id="channels-grid" class="grid grid-cols-3 gap-6 mb-8"></div>
 
     <!-- Total Messages -->
     <div class="grid grid-cols-3 gap-4 mb-8">
@@ -60,8 +60,7 @@
     let questionsPerSession = {
       myTTWeb: 3,
       myTTApp: 3,
-      eshop: 3,
-      portal: 3
+      eshop: 3
     };
 
     // Données réelles basées sur les sessions mensuelles
@@ -95,15 +94,6 @@
           { name: '/anonymos', sessions: 1 }
         ],
         totalSessions: 706,
-        adoptionRate: 0.30
-      },
-      portal: {
-        name: 'www.tunisietelecom.tn',
-        color: 'blue',
-        pages: [
-          { name: 'Page Contact', sessions: 0 } // Pas de données fournies
-        ],
-        totalSessions: 0,
         adoptionRate: 0.30
       }
     };
